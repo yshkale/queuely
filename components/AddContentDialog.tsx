@@ -2,15 +2,44 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Command, PlusIcon, SearchIcon } from "lucide-react";
 import { Kbd } from "./ui/kbd";
 import { Input } from "./ui/input";
+import { cn } from "@/lib/utils";
 
-export const AddContentDialog = () => {
+interface AddContentDialogProps {
+  className?: string;
+  noIcon?: boolean;
+  buttonLabel?: string;
+  noLabel?: boolean;
+  showLabelOnMobile?: boolean;
+}
+
+export const AddContentDialog = ({
+  className,
+  noIcon,
+  buttonLabel = "Add Content",
+  noLabel,
+  showLabelOnMobile = false,
+}: AddContentDialogProps) => {
   return (
     <Dialog>
-      <DialogTrigger className="flex items-center gap-2 border border-neutral-200 px-3 py-2 rounded-md hover:bg-neutral-100">
-        <PlusIcon size={14} />
-        <p className="text-sm">Add Content</p>
+      <DialogTrigger
+        className={cn(
+          "flex items-center gap-1.5 px-3 py-2 rounded-md md:rounded-lg bg-neutral-900 text-white cursor-pointer",
+          className,
+        )}
+      >
+        {noIcon ? null : <PlusIcon size={13} strokeWidth={3} />}
+        {!noLabel && (
+          <p
+            className={cn(
+              "text-sm",
+              !showLabelOnMobile && "hidden md:block", // Hide on mobile unless showLabelOnMobile is true
+            )}
+          >
+            {buttonLabel}
+          </p>
+        )}
       </DialogTrigger>
-      <DialogContent className="[&>button]:hidden p-0 top-[40%] min-w-[480px]">
+      <DialogContent className="[&>button]:hidden p-0 top-[40%] md:min-w-[520px]">
         <div className="flex items-center justify-between gap-4 p-4 bg-neutral-100 rounded-t-lg border-b border-neutral-300">
           <div className="flex items-center w-full">
             <SearchIcon size={18} />

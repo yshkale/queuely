@@ -1,13 +1,13 @@
 "use client";
 
-import { AppState, changeActiveTab } from "@/store/App/app.slice";
+import { changeActiveTab } from "@/store/App/app.slice";
 import { AddContentDialog } from "./AddContentDialog";
 import { Logo } from "./Logo";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { useDispatch, useSelector } from "react-redux";
 
 export const Header = () => {
-  const activeTab = useSelector((state: AppState) => state.activeTab);
+  const activeTab = useSelector((state: any) => state.app.activeTab);
   const dispatch = useDispatch();
 
   const handleTabChange = (tab: "backlog" | "history" | "active") => {
@@ -15,13 +15,13 @@ export const Header = () => {
   };
 
   return (
-    <header className="flex justify-between items-center py-4 border-b border-neutral-200 px-16">
+    <header className="flex justify-between items-center py-4 border-b border-neutral-100 lg:px-16 px-4">
       <div className="flex items-center gap-8">
         <Logo />
         <Tabs
           value={activeTab}
           defaultValue="backlog"
-          className="w-[400px] mt-1.5"
+          className="w-[400px] mt-1.5 hidden md:block"
           onValueChange={(value: string) =>
             handleTabChange(value as "backlog" | "history" | "active")
           }
@@ -48,7 +48,7 @@ export const Header = () => {
           </TabsList>
         </Tabs>
       </div>
-      <AddContentDialog />
+      <AddContentDialog noLabel={false} />
     </header>
   );
 };
