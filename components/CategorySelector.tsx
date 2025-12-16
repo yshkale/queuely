@@ -2,15 +2,13 @@
 
 import { Book, Clapperboard, LayoutGrid, Popcorn } from "lucide-react";
 import { Button } from "./ui/button";
-import { AppState, changeActiveCategory } from "@/store/App/app.slice";
+import { changeActiveCategory } from "@/store/App/app.slice";
 import { useDispatch, useSelector } from "react-redux";
 
 export const CategorySelector = () => {
   const dispatch = useDispatch();
 
-  const activeCategory = useSelector(
-    (state: AppState) => state.app.activeCategory,
-  );
+  const activeCategory = useSelector((state: any) => state.app.activeCategory);
 
   const handleCategoryChange = (category: string) => {
     dispatch(changeActiveCategory(category));

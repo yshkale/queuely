@@ -23,7 +23,7 @@ export const AddContentDialog = ({
     <Dialog>
       <DialogTrigger
         className={cn(
-          "flex items-center gap-1.5 px-3 py-2 rounded-md md:rounded-lg bg-neutral-900 text-white cursor-pointer",
+          "flex items-center gap-1.5 px-3 py-2 rounded-md md:rounded-lg bg-neutral-900 text-white cursor-pointer h-10",
           className,
         )}
       >
