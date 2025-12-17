@@ -15,6 +15,7 @@ export interface SearchResult {
   releaseDate: string | null;
   rating?: number;
   authors?: string[];
+  popularity?: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -41,6 +42,7 @@ export async function GET(request: NextRequest) {
         imageUrl: getImageUrl(movie.poster_path, "w200"),
         releaseDate: movie.release_date,
         rating: movie.vote_average,
+        popularity: movie.popularity || 0,
       })),
     );
 
@@ -54,6 +56,7 @@ export async function GET(request: NextRequest) {
         imageUrl: getImageUrl(show.poster_path, "w200"),
         releaseDate: show.first_air_date,
         rating: show.vote_average,
+        popularity: show.popularity || 0,
       })),
     );
 
@@ -67,13 +70,18 @@ export async function GET(request: NextRequest) {
         imageUrl: book.volumeInfo.imageLinks?.thumbnail || null,
         releaseDate: book.volumeInfo.publishedDate || null,
         authors: book.volumeInfo.authors,
+        popularity: 0,
       })),
+    );
+
+    const sortedResults = results.sort(
+      (a, b) => (b.popularity ?? 0) - (a.popularity ?? 0),
     );
 
     return NextResponse.json({
       query,
-      count: results.length,
-      results,
+      count: sortedResults.length,
+      results: sortedResults.slice(0, 10),
     });
   } catch (err) {
     console.error("search API error:", err);
