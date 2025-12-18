@@ -74,14 +74,14 @@ export async function GET(request: NextRequest) {
       })),
     );
 
-    const sortedResults = results.sort(
-      (a, b) => (b.popularity ?? 0) - (a.popularity ?? 0),
-    );
+    const sortedResults = results
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+      ?.slice(0, 10);
 
     return NextResponse.json({
       query,
       count: sortedResults.length,
-      results: sortedResults.slice(0, 10),
+      results: sortedResults,
     });
   } catch (err) {
     console.error("search API error:", err);

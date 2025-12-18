@@ -4,12 +4,17 @@ import { createSlice } from "@reduxjs/toolkit";
 import { Actions } from "./app.saga";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createAction } from "@reduxjs/toolkit";
+import { QueueItem } from "@/types";
 
 export interface AppState {
   activeTab: "backlog" | "history" | "active";
   activeCategory: "all" | "movies" | "tv-shows" | "books";
   searchedContent: SearchResult[];
   searchContentApiStatus: string;
+  addContentToQueueResponse: any;
+  addContentToQueueApiStatus: string;
+  queues: QueueItem[];
+  getQueuesApiStatus: string;
 }
 
 const initialState: AppState = {
@@ -17,6 +22,12 @@ const initialState: AppState = {
   activeCategory: "all",
   searchedContent: [],
   searchContentApiStatus: AsyncState.IDLE,
+
+  addContentToQueueResponse: null,
+  addContentToQueueApiStatus: AsyncState.IDLE,
+
+  queues: [],
+  getQueuesApiStatus: AsyncState.IDLE,
 };
 
 const slice = createSlice({
@@ -50,6 +61,42 @@ const slice = createSlice({
       state.searchContentApiStatus = AsyncState.REJECTED;
       state.searchedContent = [];
     });
+
+    builder.addCase(
+      Actions.addContentToQueue + ActionState.PENDING,
+      (state) => {
+        state.addContentToQueueApiStatus = AsyncState.PENDING;
+      },
+    );
+    builder.addCase(
+      Actions.addContentToQueue + ActionState.FULFILLED,
+      (state, action: PayloadAction<QueueItem>) => {
+        state.addContentToQueueResponse = action.payload;
+        state.addContentToQueueApiStatus = AsyncState.FULFILLED;
+      },
+    );
+    builder.addCase(
+      Actions.addContentToQueue + ActionState.REJECTED,
+      (state) => {
+        state.addContentToQueueApiStatus = AsyncState.REJECTED;
+        state.addContentToQueueResponse = null;
+      },
+    );
+
+    builder.addCase(Actions.getQueues + ActionState.PENDING, (state) => {
+      state.getQueuesApiStatus = AsyncState.PENDING;
+    });
+    builder.addCase(
+      Actions.getQueues + ActionState.FULFILLED,
+      (state, action: PayloadAction<QueueItem[]>) => {
+        state.queues = action.payload;
+        state.getQueuesApiStatus = AsyncState.FULFILLED;
+      },
+    );
+    builder.addCase(Actions.getQueues + ActionState.REJECTED, (state) => {
+      state.getQueuesApiStatus = AsyncState.REJECTED;
+      state.queues = [];
+    });
   },
 });
 
@@ -61,5 +108,9 @@ export const {
 } = slice.actions;
 
 export const searchContent = createAction<string>(Actions.searchContent);
+export const addContentToQueue = createAction<QueueItem>(
+  Actions.addContentToQueue,
+);
+export const getAllQueues = createAction(Actions.getQueues);
 
 export const AppReducer = slice.reducer;

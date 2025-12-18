@@ -1,13 +1,23 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Command, Loader2, PlusIcon, SearchIcon } from "lucide-react";
 import { Kbd } from "./ui/kbd";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { resetSearchedContent, searchContent } from "@/store/App/app.slice";
+import {
+  addContentToQueue,
+  resetSearchedContent,
+  searchContent,
+} from "@/store/App/app.slice";
 import { AsyncState } from "@/helper/constants";
 import { SearchContentCard } from "./SearchContentCard";
 import { SearchResult } from "@/app/api/search/route";
@@ -44,7 +54,7 @@ export const AddContentDialog = ({
 
     const timeoutId = setTimeout(() => {
       dispatch(searchContent(searchQuery));
-    }, 800);
+    }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, dispatch]);
@@ -52,6 +62,20 @@ export const AddContentDialog = ({
   const handleClose = () => {
     dispatch(resetSearchedContent());
     setSearchQuery("");
+  };
+
+  const handleAddContentToQueue = (content: SearchResult) => {
+    const queueItem = {
+      contentId: content.id,
+      title: content.title,
+      description: content.description || "",
+      type: content.type,
+      year: content.releaseDate || undefined,
+      author: (content.authors?.length && content.authors[0]) || "Unknown",
+      imageUrl: content.imageUrl || `https://avatar.vercel.sh/${content.id}`,
+      status: "backlog",
+    };
+    dispatch(addContentToQueue(queueItem));
   };
 
   return (
@@ -75,6 +99,8 @@ export const AddContentDialog = ({
         )}
       </DialogTrigger>
       <DialogContent className="[&>button]:hidden p-0 top-[40%] md:min-w-[520px]">
+        <DialogTitle className="hidden">hidden</DialogTitle>
+        <DialogDescription className="hidden">hidden</DialogDescription>
         <div className="flex items-center justify-between gap-4 p-4 bg-neutral-100 rounded-t-lg border-b border-neutral-300">
           <div className="flex items-center w-full">
             <SearchIcon size={18} />
@@ -112,10 +138,18 @@ export const AddContentDialog = ({
           {searchedContent?.count > 0 && (
             <section className="space-y-4 px-4 overflow-y-scroll h-96">
               <p className="uppercase font-semibold text-sm text-neutral-500">
-                {searchedContent?.count} Suggestions
+                {searchedContent?.count} Content
               </p>
               {searchedContent?.results?.map((content: SearchResult) => (
-                <SearchContentCard key={content.id} {...content} />
+                <div
+                  key={content.id}
+                  onClick={() => handleAddContentToQueue(content)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleAddContentToQueue(content)
+                  }
+                >
+                  <SearchContentCard {...content} />
+                </div>
               ))}
             </section>
           )}
