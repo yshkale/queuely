@@ -1,6 +1,8 @@
 import { searchBooks } from "@/lib/api-clients/books";
 import {
   getImageUrl,
+  getMovieCredits,
+  getTVCredits,
   searchMovies,
   searchTVShows,
 } from "@/lib/api-clients/tmdb";
@@ -15,6 +17,7 @@ export interface SearchResult {
   releaseDate: string | null;
   rating?: number;
   authors?: string[];
+  director?: string;
   popularity?: number;
 }
 
@@ -33,32 +36,36 @@ export async function GET(request: NextRequest) {
     const results: SearchResult[] = [];
 
     const movies = await searchMovies(query);
-    results.push(
-      ...movies.slice(0, 10).map((movie) => ({
+    const moviesWithDirectors = await Promise.all(
+      movies.slice(0, 10).map(async (movie) => ({
         id: `movie-${movie.id}`,
         type: "movie" as const,
         title: movie.title,
         description: movie.overview,
-        imageUrl: getImageUrl(movie.poster_path, "w200"),
+        imageUrl: getImageUrl(movie.poster_path),
         releaseDate: movie.release_date,
         rating: movie.vote_average,
         popularity: movie.popularity || 0,
+        director: await getMovieCredits(movie.id),
       })),
     );
+    results.push(...moviesWithDirectors);
 
     const tvShows = await searchTVShows(query);
-    results.push(
-      ...tvShows.slice(0, 10).map((show) => ({
+    const tvWithDirectors = await Promise.all(
+      tvShows.slice(0, 10).map(async (show) => ({
         id: `tv-${show.id}`,
         type: "tv" as const,
         title: show.name,
         description: show.overview,
-        imageUrl: getImageUrl(show.poster_path, "w200"),
+        imageUrl: getImageUrl(show.poster_path),
         releaseDate: show.first_air_date,
         rating: show.vote_average,
         popularity: show.popularity || 0,
+        director: await getTVCredits(show.id),
       })),
     );
+    results.push(...tvWithDirectors);
 
     const books = await searchBooks(query);
     results.push(
@@ -67,7 +74,7 @@ export async function GET(request: NextRequest) {
         type: "book" as const,
         title: book.volumeInfo.title,
         description: book.volumeInfo.description || "",
-        imageUrl: book.volumeInfo.imageLinks?.thumbnail || null,
+        imageUrl: `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w800-h1200&source=gbs_api`,
         releaseDate: book.volumeInfo.publishedDate || null,
         authors: book.volumeInfo.authors,
         popularity: 0,

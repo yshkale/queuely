@@ -6,6 +6,8 @@ export interface GoogleBook {
     description?: string;
     imageLinks?: {
       thumbnail: string;
+      extraLarge: string;
+      large: string;
     };
     publishedDate?: string;
   };

@@ -7,4 +7,5 @@ export interface QueueItem {
   author?: string;
   imageUrl: string;
   status: string;
+  director?: string;
 }

@@ -39,7 +39,7 @@ export default function Home() {
         ) : null}
 
         {getQueuesApiStatus === AsyncState.FULFILLED && allQueues.length > 0 ? (
-          <div className="flex gap-1 md:gap-6 my-10 md:my-20">
+          <div className="grid grid-cols-2 my-8 gap-1 md:grid-cols-3 lg:grid-cols-6 lg:gap-6 md:my-18 lg:mr-6">
             {allQueues.map((queue: QueueItem) => (
               <QueueCard key={queue.contentId} {...queue} />
             ))}

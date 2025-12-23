@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
         author: body.author,
         imageUrl: body.imageUrl,
         status: body.status,
+        director: body.director,
       })
       .select()
       .single();

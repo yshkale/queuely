@@ -72,6 +72,7 @@ export const AddContentDialog = ({
       type: content.type,
       year: content.releaseDate || undefined,
       author: (content.authors?.length && content.authors[0]) || "Unknown",
+      director: content.director || "Unknown",
       imageUrl: content.imageUrl || `https://avatar.vercel.sh/${content.id}`,
       status: "backlog",
     };
