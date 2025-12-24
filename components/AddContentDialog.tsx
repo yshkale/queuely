@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Command, Loader2, PlayIcon, SearchIcon } from "lucide-react";
+import { Command, Loader2, SearchIcon } from "lucide-react";
 import { Kbd } from "./ui/kbd";
 import { Input } from "./ui/input";
 import { useEffect, useState } from "react";

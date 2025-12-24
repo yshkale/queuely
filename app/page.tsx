@@ -4,6 +4,7 @@ import { EmptyQueue } from "@/components/EmptyQueue";
 import { Header } from "@/components/Header";
 import { Navigation } from "@/components/Navigation";
 import { QueueCard } from "@/components/QueueCard";
+import { StatusTabs } from "@/components/StatusTabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AsyncState } from "@/helper/constants";
 import { getAllQueues } from "@/store/App/app.slice";
@@ -15,6 +16,23 @@ export default function Home() {
   const dispatch = useDispatch();
 
   const allQueues = useSelector((state: any) => state.app.queues);
+  const activeTab = useSelector((state: any) => state.app.activeTab);
+  const activeCategory = useSelector((state: any) => state.app.activeCategory);
+  const activeType =
+    activeCategory === "movies"
+      ? "movie"
+      : activeCategory === "tv-shows"
+        ? "tv"
+        : activeCategory === "books"
+          ? "book"
+          : "all";
+
+  const displayQueues = allQueues
+    ?.filter((queue: QueueItem) => queue.status === activeTab)
+    ?.filter(
+      (queue: QueueItem) => activeType === "all" || queue.type === activeType,
+    );
+
   const getQueuesApiStatus = useSelector(
     (state: any) => state.app.getQueuesApiStatus,
   );
@@ -26,10 +44,10 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main className="px-4 md:px-20 py-6 md:py-10 space-y-4">
+      <main className="px-4 md:px-20 py-6 md:py-10 space-y-4 relative">
         <Navigation />
 
-        {allQueues.length === 0 &&
+        {displayQueues.length === 0 &&
         getQueuesApiStatus === AsyncState.FULFILLED ? (
           <EmptyQueue />
         ) : null}
@@ -38,14 +56,19 @@ export default function Home() {
           <Skeleton className="h-96 w-full my-8 md:my-14" />
         ) : null}
 
-        {getQueuesApiStatus === AsyncState.FULFILLED && allQueues.length > 0 ? (
+        {getQueuesApiStatus === AsyncState.FULFILLED &&
+        displayQueues.length > 0 ? (
           <div className="grid grid-cols-2 gap-1 my-8 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] md:gap-6 md:my-18 lg:mr-6">
-            {allQueues.map((queue: QueueItem) => (
+            {displayQueues.map((queue: QueueItem) => (
               <QueueCard key={queue.contentId} {...queue} />
             ))}
           </div>
         ) : null}
       </main>
+
+      <div className="w-full flex justify-center">
+        <StatusTabs className="w-7/8 fixed bottom-0 z-50 md:hidden" />
+      </div>
     </>
   );
 }

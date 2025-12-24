@@ -13,6 +13,7 @@ const logoFont = localFont({
 export const EmptyQueue = () => {
   const dispatch = useDispatch();
   const isDialogOpen = useSelector((state: any) => state.app.openQueueCard);
+  const activeTab = useSelector((state: any) => state.app.activeTab);
 
   return (
     <div className="flex flex-col items-center justify-center my-12 py-8 border border-neutral-200 rounded-lg border-dashed w-full bg-neutral-50 h-96 md:h-[480px]">
@@ -24,7 +25,11 @@ export const EmptyQueue = () => {
           It&apos;s quite here
         </h2>
         <p className="text-gray-500 text-sm md:text-base">
-          You don&apos;t have any media in your watchlist list yet.
+          {activeTab === "backlog"
+            ? "You don't have any media in your watchlist yet."
+            : activeTab === "active"
+              ? "You don't have any media in your active list yet."
+              : "You don't have any media in your completed list yet."}
         </p>
       </div>
 

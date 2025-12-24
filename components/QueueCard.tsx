@@ -29,7 +29,7 @@ export const QueueCard = ({
             ? `linear-gradient(to top, ${getBookGradient()}, ${getBookGradient(true)})`
             : `url(${imageUrl})`,
       }}
-      className="relative bg-no-repeat bg-cover bg-center w-full h-68 md:w-3xs md:min-h-96
+      className="relative bg-no-repeat bg-cover bg-center w-full h-68 md:max-w-3xs md:min-h-96
                  before:absolute before:inset-0
                  before:bg-linear-to-t before:from-black before:to-transparent overflow-hidden"
     >
