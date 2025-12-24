@@ -15,6 +15,7 @@ export interface AppState {
   addContentToQueueApiStatus: string;
   queues: QueueItem[];
   getQueuesApiStatus: string;
+  openQueueCard: boolean;
 }
 
 const initialState: AppState = {
@@ -28,6 +29,7 @@ const initialState: AppState = {
 
   queues: [],
   getQueuesApiStatus: AsyncState.IDLE,
+  openQueueCard: false,
 };
 
 const slice = createSlice({
@@ -44,6 +46,12 @@ const slice = createSlice({
     resetSearchedContent: (state) => {
       state.searchedContent = [];
       state.searchContentApiStatus = AsyncState.IDLE;
+    },
+    toggleQueueCard: (state, action) => {
+      state.openQueueCard = action.payload;
+    },
+    addQueueItemOptimistically: (state, action: PayloadAction<QueueItem>) => {
+      state.queues.push(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -105,6 +113,8 @@ export const {
   changeActiveTab,
   changeActiveCategory,
   resetSearchedContent,
+  toggleQueueCard,
+  addQueueItemOptimistically,
 } = slice.actions;
 
 export const searchContent = createAction<string>(Actions.searchContent);

@@ -1,14 +1,18 @@
 "use client";
 
-import { changeActiveTab } from "@/store/App/app.slice";
+import { changeActiveTab, toggleQueueCard } from "@/store/App/app.slice";
 import { AddContentDialog } from "./AddContentDialog";
 import { Logo } from "./Logo";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { useDispatch, useSelector } from "react-redux";
+import { Button } from "./ui/button";
+import { PlusIcon } from "lucide-react";
 
 export const Header = () => {
   const activeTab = useSelector((state: any) => state.app.activeTab);
   const dispatch = useDispatch();
+
+  const isDialogOpen = useSelector((state: any) => state.app.openQueueCard);
 
   const handleTabChange = (tab: "backlog" | "history" | "active") => {
     dispatch(changeActiveTab(tab));
@@ -48,7 +52,18 @@ export const Header = () => {
           </TabsList>
         </Tabs>
       </div>
-      <AddContentDialog noLabel={false} />
+
+      <Button
+        className="flex items-center gap-1.5 px-3 py-2 rounded-md md:rounded-lg bg-neutral-900 text-white cursor-pointer h-10"
+        onClick={() => {
+          dispatch(toggleQueueCard(true));
+        }}
+      >
+        <PlusIcon size={13} strokeWidth={3} />
+        <p className="text-sm hidden md:block">Add Content</p>
+      </Button>
+
+      {isDialogOpen && <AddContentDialog />}
     </header>
   );
 };

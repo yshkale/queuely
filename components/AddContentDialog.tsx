@@ -5,38 +5,25 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Command, Loader2, PlusIcon, SearchIcon } from "lucide-react";
+import { Command, Loader2, PlayIcon, SearchIcon } from "lucide-react";
 import { Kbd } from "./ui/kbd";
 import { Input } from "./ui/input";
-import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addContentToQueue,
+  addQueueItemOptimistically,
   resetSearchedContent,
   searchContent,
+  toggleQueueCard,
 } from "@/store/App/app.slice";
 import { AsyncState } from "@/helper/constants";
 import { SearchContentCard } from "./SearchContentCard";
 import { SearchResult } from "@/app/api/search/route";
+import { toast } from "sonner";
 
-interface AddContentDialogProps {
-  className?: string;
-  noIcon?: boolean;
-  buttonLabel?: string;
-  noLabel?: boolean;
-  showLabelOnMobile?: boolean;
-}
-
-export const AddContentDialog = ({
-  className,
-  noIcon,
-  buttonLabel = "Add Content",
-  noLabel,
-  showLabelOnMobile = false,
-}: AddContentDialogProps) => {
+export const AddContentDialog = () => {
   const dispatch = useDispatch();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -60,6 +47,7 @@ export const AddContentDialog = ({
   }, [searchQuery, dispatch]);
 
   const handleClose = () => {
+    dispatch(toggleQueueCard(false));
     dispatch(resetSearchedContent());
     setSearchQuery("");
   };
@@ -77,28 +65,14 @@ export const AddContentDialog = ({
       status: "backlog",
     };
     dispatch(addContentToQueue(queueItem));
+    dispatch(addQueueItemOptimistically(queueItem));
+
+    toast.success(`${content.title} added to your queue`);
+    handleClose();
   };
 
   return (
-    <Dialog onOpenChange={(open) => !open && handleClose()}>
-      <DialogTrigger
-        className={cn(
-          "flex items-center gap-1.5 px-3 py-2 rounded-md md:rounded-lg bg-neutral-900 text-white cursor-pointer h-10",
-          className,
-        )}
-      >
-        {noIcon ? null : <PlusIcon size={13} strokeWidth={3} />}
-        {!noLabel && (
-          <p
-            className={cn(
-              "text-sm",
-              !showLabelOnMobile && "hidden md:block", // Hide on mobile unless showLabelOnMobile is true
-            )}
-          >
-            {buttonLabel}
-          </p>
-        )}
-      </DialogTrigger>
+    <Dialog defaultOpen={true} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="[&>button]:hidden p-0 top-[40%] md:min-w-[520px]">
         <DialogTitle className="hidden">hidden</DialogTitle>
         <DialogDescription className="hidden">hidden</DialogDescription>
@@ -128,9 +102,9 @@ export const AddContentDialog = ({
           )}
 
           {searchContentApiStatus === AsyncState.PENDING && (
-            <div className="w-full flex flex-col gap-3 uppercase items-center justify-center h-full">
+            <div className="w-full flex flex-col gap-3 uppercase items-center justify-center h-4/5">
               <Loader2 className="animate-spin" strokeWidth={1.2} />
-              <p className="text-sm text-neutral-400 font-mono">
+              <p className="text-sm text-neutral-400 font-mono ml-4">
                 Searching the universe...
               </p>
             </div>

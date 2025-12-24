@@ -6,6 +6,7 @@ import { PlayIcon } from "lucide-react";
 import localFont from "next/font/local";
 
 import { Button } from "./ui/button";
+import { getBookGradient } from "@/helper/getBookGradient";
 
 const logoFont = localFont({
   src: "../app/fonts/Queuely-serif.ttf",
@@ -22,18 +23,23 @@ export const QueueCard = ({
 }: QueueItem) => {
   return (
     <Card
-      style={{ backgroundImage: `url(${imageUrl})` }}
+      style={{
+        backgroundImage:
+          type === "book"
+            ? `linear-gradient(to top, ${getBookGradient()}, ${getBookGradient(true)})`
+            : `url(${imageUrl})`,
+      }}
       className="relative bg-no-repeat bg-cover bg-center w-full h-68 md:w-3xs md:min-h-96
                  before:absolute before:inset-0
                  before:bg-linear-to-t before:from-black before:to-transparent overflow-hidden"
     >
-      <CardHeader className="relative z-10">
-        <Badge className="rounded-sm uppercase font-mono tracking-wide bg-neutral-200 text-neutral-800">
+      <CardHeader className="relative z-10 px-3 md:px-4">
+        <Badge className="rounded-sm uppercase font-mono tracking-wide bg-neutral-700/40 text-white">
           {status}
         </Badge>
       </CardHeader>
 
-      <CardFooter className="relative z-10 mt-auto flex flex-col items-start gap-1">
+      <CardFooter className="relative z-10 mt-auto flex flex-col items-start gap-1 px-3 md:px-4">
         <div className="flex items-center text-neutral-200 font-semibold gap-1.5">
           <PlayIcon size={12} />
           <p className="uppercase text-xs flex items-center gap-1.5">
@@ -64,7 +70,7 @@ export const QueueCard = ({
           </p>
         </div>
 
-        <Button className="cursor-pointer w-full text-xs uppercase font-mono tracking-wide bg-neutral-50 text-neutral-800 mt-2 hover:bg-neutral-50">
+        <Button className="cursor-pointer w-full text-xs uppercase font-mono tracking-wide bg-neutral-900/30 text-white border border-neutral-800 mt-2 hover:bg-black/30">
           <PlayIcon />
           Start
         </Button>

@@ -26,7 +26,7 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main className="px-4 md:px-20 py-8 md:py-10 space-y-4">
+      <main className="px-4 md:px-20 py-6 md:py-10 space-y-4">
         <Navigation />
 
         {allQueues.length === 0 &&
@@ -35,11 +35,11 @@ export default function Home() {
         ) : null}
 
         {getQueuesApiStatus === AsyncState.PENDING ? (
-          <Skeleton className="h-96 w-full my-14" />
+          <Skeleton className="h-96 w-full my-8 md:my-14" />
         ) : null}
 
         {getQueuesApiStatus === AsyncState.FULFILLED && allQueues.length > 0 ? (
-          <div className="grid grid-cols-2 my-8 gap-1 md:grid-cols-3 lg:grid-cols-6 lg:gap-6 md:my-18 lg:mr-6">
+          <div className="grid grid-cols-2 gap-1 my-8 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] md:gap-6 md:my-18 lg:mr-6">
             {allQueues.map((queue: QueueItem) => (
               <QueueCard key={queue.contentId} {...queue} />
             ))}
