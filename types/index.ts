@@ -1,5 +1,5 @@
 export interface QueueItem {
-  id: string;
+  id?: string;
   contentId: string;
   title: string;
   description?: string;

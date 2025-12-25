@@ -1,12 +1,12 @@
 import { QueueItem } from "@/types";
 
 export interface UpdateQueueStatusRequest {
-  id: string;
+  id: any;
   status: string;
 }
 
 export interface DeleteQueueRequest {
-  id: string;
+  id: any;
 }
 
 export const searchContent = async (query: string) => {
