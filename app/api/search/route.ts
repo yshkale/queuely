@@ -35,51 +35,63 @@ export async function GET(request: NextRequest) {
 
     const results: SearchResult[] = [];
 
-    const movies = await searchMovies(query);
-    const moviesWithDirectors = await Promise.all(
-      movies.slice(0, 10).map(async (movie) => ({
-        id: `movie-${movie.id}`,
-        type: "movie" as const,
-        title: movie.title,
-        description: movie.overview,
-        imageUrl: getImageUrl(movie.poster_path),
-        releaseDate: movie.release_date,
-        rating: movie.vote_average,
-        popularity: movie.popularity || 0,
-        director: await getMovieCredits(movie.id),
-      })),
-    );
-    results.push(...moviesWithDirectors);
+    try {
+      const movies = await searchMovies(query);
+      const moviesWithDirectors = await Promise.all(
+        movies.slice(0, 10).map(async (movie) => ({
+          id: `movie-${movie.id}`,
+          type: "movie" as const,
+          title: movie.title,
+          description: movie.overview,
+          imageUrl: getImageUrl(movie.poster_path),
+          releaseDate: movie.release_date,
+          rating: movie.vote_average,
+          popularity: movie.popularity || 0,
+          director: await getMovieCredits(movie.id).catch(() => undefined),
+        })),
+      );
+      results.push(...moviesWithDirectors);
+    } catch (e) {
+      console.error("Movie search failed:", e);
+    }
 
-    const tvShows = await searchTVShows(query);
-    const tvWithDirectors = await Promise.all(
-      tvShows.slice(0, 10).map(async (show) => ({
-        id: `tv-${show.id}`,
-        type: "tv" as const,
-        title: show.name,
-        description: show.overview,
-        imageUrl: getImageUrl(show.poster_path),
-        releaseDate: show.first_air_date,
-        rating: show.vote_average,
-        popularity: show.popularity || 0,
-        director: await getTVCredits(show.id),
-      })),
-    );
-    results.push(...tvWithDirectors);
+    try {
+      const tvShows = await searchTVShows(query);
+      const tvWithDirectors = await Promise.all(
+        tvShows.slice(0, 10).map(async (show) => ({
+          id: `tv-${show.id}`,
+          type: "tv" as const,
+          title: show.name,
+          description: show.overview,
+          imageUrl: getImageUrl(show.poster_path),
+          releaseDate: show.first_air_date,
+          rating: show.vote_average,
+          popularity: show.popularity || 0,
+          director: await getTVCredits(show.id).catch(() => undefined),
+        })),
+      );
+      results.push(...tvWithDirectors);
+    } catch (e) {
+      console.error("TV search failed:", e);
+    }
 
-    const books = await searchBooks(query);
-    results.push(
-      ...books.map((book) => ({
-        id: `book-${book.id}`,
-        type: "book" as const,
-        title: book.volumeInfo.title,
-        description: book.volumeInfo.description || "",
-        imageUrl: `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w800-h1200&source=gbs_api`,
-        releaseDate: book.volumeInfo.publishedDate || null,
-        authors: book.volumeInfo.authors,
-        popularity: 0,
-      })),
-    );
+    try {
+      const books = await searchBooks(query);
+      results.push(
+        ...books.map((book) => ({
+          id: `book-${book.id}`,
+          type: "book" as const,
+          title: book.volumeInfo.title,
+          description: book.volumeInfo.description || "",
+          imageUrl: `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w800-h1200&source=gbs_api`,
+          releaseDate: book.volumeInfo.publishedDate || null,
+          authors: book.volumeInfo.authors,
+          popularity: 0,
+        })),
+      );
+    } catch (e) {
+      console.error("Book search failed:", e);
+    }
 
     const sortedResults = results
       .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
