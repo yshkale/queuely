@@ -60,7 +60,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      queues: data,
+      queues: data.sort((a, b) => b.id - a.id),
       status: 200,
     });
   } catch (err) {

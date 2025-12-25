@@ -58,7 +58,7 @@ export default function Home() {
 
         {getQueuesApiStatus === AsyncState.FULFILLED &&
         displayQueues.length > 0 ? (
-          <div className="grid grid-cols-2 gap-1 my-8 md:grid-cols-[repeat(auto-fit,minmax(280px,1fr))] md:gap-6 md:my-18 lg:mr-6">
+          <div className="flex flex-row gap-1 md:gap-3 my-8 md:my-14 flex-wrap">
             {displayQueues.map((queue: QueueItem) => (
               <QueueCard key={queue.contentId} {...queue} />
             ))}
@@ -67,7 +67,7 @@ export default function Home() {
       </main>
 
       <div className="w-full flex justify-center">
-        <StatusTabs className="w-7/8 fixed bottom-0 z-50 md:hidden" />
+        <StatusTabs className="w-7/8 fixed bottom-1 z-50 md:hidden" />
       </div>
     </>
   );

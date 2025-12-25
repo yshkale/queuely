@@ -5,6 +5,7 @@ import { Actions } from "./app.saga";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createAction } from "@reduxjs/toolkit";
 import { QueueItem } from "@/types";
+import { UpdateQueueStatusRequest } from "@/services";
 
 export interface AppState {
   activeTab: "backlog" | "history" | "active";
@@ -16,6 +17,8 @@ export interface AppState {
   queues: QueueItem[];
   getQueuesApiStatus: string;
   openQueueCard: boolean;
+  updateQueueStatusResponse: null | QueueItem;
+  updateQueueStatusApiStatus: string;
 }
 
 const initialState: AppState = {
@@ -30,6 +33,9 @@ const initialState: AppState = {
   queues: [],
   getQueuesApiStatus: AsyncState.IDLE,
   openQueueCard: false,
+
+  updateQueueStatusResponse: null,
+  updateQueueStatusApiStatus: AsyncState.IDLE,
 };
 
 const slice = createSlice({
@@ -51,7 +57,21 @@ const slice = createSlice({
       state.openQueueCard = action.payload;
     },
     addQueueItemOptimistically: (state, action: PayloadAction<QueueItem>) => {
-      state.queues.push(action.payload);
+      state.queues.unshift(action.payload);
+    },
+    updateQueueStatusOptimistically: (
+      state,
+      action: PayloadAction<UpdateQueueStatusRequest>,
+    ) => {
+      state.queues = state.queues.map((queue) => {
+        if (queue.id === action.payload.id) {
+          return {
+            ...queue,
+            status: action.payload.status,
+          };
+        }
+        return queue;
+      });
     },
   },
   extraReducers: (builder) => {
@@ -105,6 +125,26 @@ const slice = createSlice({
       state.getQueuesApiStatus = AsyncState.REJECTED;
       state.queues = [];
     });
+
+    builder.addCase(
+      Actions.updateQueueStatus + ActionState.PENDING,
+      (state) => {
+        state.updateQueueStatusApiStatus = AsyncState.PENDING;
+      },
+    );
+    builder.addCase(
+      Actions.updateQueueStatus + ActionState.FULFILLED,
+      (state, action: PayloadAction<QueueItem>) => {
+        state.updateQueueStatusResponse = action.payload;
+        state.updateQueueStatusApiStatus = AsyncState.FULFILLED;
+      },
+    );
+    builder.addCase(
+      Actions.updateQueueStatus + ActionState.REJECTED,
+      (state) => {
+        state.updateQueueStatusApiStatus = AsyncState.REJECTED;
+      },
+    );
   },
 });
 
@@ -115,6 +155,7 @@ export const {
   resetSearchedContent,
   toggleQueueCard,
   addQueueItemOptimistically,
+  updateQueueStatusOptimistically,
 } = slice.actions;
 
 export const searchContent = createAction<string>(Actions.searchContent);
@@ -122,5 +163,8 @@ export const addContentToQueue = createAction<QueueItem>(
   Actions.addContentToQueue,
 );
 export const getAllQueues = createAction(Actions.getQueues);
+export const updateQueueStatus = createAction<UpdateQueueStatusRequest>(
+  Actions.updateQueueStatus,
+);
 
 export const AppReducer = slice.reducer;

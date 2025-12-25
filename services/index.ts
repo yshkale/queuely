@@ -1,5 +1,10 @@
 import { QueueItem } from "@/types";
 
+export interface UpdateQueueStatusRequest {
+  id: string;
+  status: string;
+}
+
 export const searchContent = async (query: string) => {
   try {
     const response = await fetch(`/api/search?query=${query}`, {
@@ -59,6 +64,34 @@ export const getQueues = async () => {
     const responseJson = await response.json();
 
     return responseJson.queues;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const updateQueueStatus = async ({
+  id,
+  status,
+}: UpdateQueueStatusRequest) => {
+  try {
+    const response = await fetch("/api/update-queue-status", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        status,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseJson = await response.json();
+
+    return responseJson.data;
   } catch (err) {
     console.error(err);
   }

@@ -1,7 +1,13 @@
 import { call, put, takeLatest } from "redux-saga/effects";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { ActionState } from "../../helper/constants";
-import { addContentToQueue, getQueues, searchContent } from "@/services";
+import {
+  addContentToQueue,
+  getQueues,
+  searchContent,
+  updateQueueStatus,
+  UpdateQueueStatusRequest,
+} from "@/services";
 import { SagaIterator } from "redux-saga";
 import { QueueItem } from "@/types";
 
@@ -9,6 +15,7 @@ export const Actions = {
   searchContent: "search-content/",
   addContentToQueue: "add-content-to-queue/",
   getQueues: "get-queues/",
+  updateQueueStatus: "update-queue-status/",
 };
 
 function* searchContentSaga() {
@@ -94,8 +101,38 @@ function* getQueuesSaga() {
   });
 }
 
+function* updateQueueStatusSaga() {
+  yield takeLatest(
+    Actions.updateQueueStatus,
+    function* (action: PayloadAction<UpdateQueueStatusRequest>): SagaIterator {
+      try {
+        yield put({
+          type: Actions.updateQueueStatus + ActionState.PENDING,
+          payload: {},
+        });
+
+        const payload = action.payload;
+        const data = yield call(async () => {
+          return updateQueueStatus(payload);
+        });
+
+        yield put({
+          type: Actions.updateQueueStatus + ActionState.FULFILLED,
+          payload: data,
+        });
+      } catch (err) {
+        yield put({
+          type: Actions.updateQueueStatus + ActionState.REJECTED,
+          payload: err,
+        });
+      }
+    },
+  );
+}
+
 export const appSaga = [
   ...searchContentSaga(),
   ...addContentToQueueSaga(),
   ...getQueuesSaga(),
+  ...updateQueueStatusSaga(),
 ];
