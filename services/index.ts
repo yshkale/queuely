@@ -5,6 +5,10 @@ export interface UpdateQueueStatusRequest {
   status: string;
 }
 
+export interface DeleteQueueRequest {
+  id: string;
+}
+
 export const searchContent = async (query: string) => {
   try {
     const response = await fetch(`/api/search?query=${query}`, {
@@ -92,6 +96,30 @@ export const updateQueueStatus = async ({
     const responseJson = await response.json();
 
     return responseJson.data;
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const deleteQueue = async ({ id }: DeleteQueueRequest) => {
+  try {
+    const response = await fetch("/api/delete-queue", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const responseJson = await response.json();
+
+    return responseJson;
   } catch (err) {
     console.error(err);
   }

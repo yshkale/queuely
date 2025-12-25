@@ -5,7 +5,7 @@ import { Actions } from "./app.saga";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createAction } from "@reduxjs/toolkit";
 import { QueueItem } from "@/types";
-import { UpdateQueueStatusRequest } from "@/services";
+import { DeleteQueueRequest, UpdateQueueStatusRequest } from "@/services";
 
 export interface AppState {
   activeTab: "backlog" | "history" | "active";
@@ -19,6 +19,7 @@ export interface AppState {
   openQueueCard: boolean;
   updateQueueStatusResponse: null | QueueItem;
   updateQueueStatusApiStatus: string;
+  deleteQueueApiStatus: string;
 }
 
 const initialState: AppState = {
@@ -36,6 +37,8 @@ const initialState: AppState = {
 
   updateQueueStatusResponse: null,
   updateQueueStatusApiStatus: AsyncState.IDLE,
+
+  deleteQueueApiStatus: AsyncState.IDLE,
 };
 
 const slice = createSlice({
@@ -72,6 +75,14 @@ const slice = createSlice({
         }
         return queue;
       });
+    },
+    deleteQueueOptimistically: (
+      state,
+      action: PayloadAction<DeleteQueueRequest>,
+    ) => {
+      state.queues = state.queues.filter(
+        (queue) => queue.id !== action.payload.id,
+      );
     },
   },
   extraReducers: (builder) => {
@@ -145,6 +156,16 @@ const slice = createSlice({
         state.updateQueueStatusApiStatus = AsyncState.REJECTED;
       },
     );
+
+    builder.addCase(Actions.deleteQueue + ActionState.PENDING, (state) => {
+      state.deleteQueueApiStatus = AsyncState.PENDING;
+    });
+    builder.addCase(Actions.deleteQueue + ActionState.FULFILLED, (state) => {
+      state.deleteQueueApiStatus = AsyncState.FULFILLED;
+    });
+    builder.addCase(Actions.deleteQueue + ActionState.REJECTED, (state) => {
+      state.deleteQueueApiStatus = AsyncState.REJECTED;
+    });
   },
 });
 
@@ -156,6 +177,7 @@ export const {
   toggleQueueCard,
   addQueueItemOptimistically,
   updateQueueStatusOptimistically,
+  deleteQueueOptimistically,
 } = slice.actions;
 
 export const searchContent = createAction<string>(Actions.searchContent);
@@ -165,6 +187,9 @@ export const addContentToQueue = createAction<QueueItem>(
 export const getAllQueues = createAction(Actions.getQueues);
 export const updateQueueStatus = createAction<UpdateQueueStatusRequest>(
   Actions.updateQueueStatus,
+);
+export const deleteQueue = createAction<DeleteQueueRequest>(
+  Actions.deleteQueue,
 );
 
 export const AppReducer = slice.reducer;

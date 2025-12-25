@@ -1,7 +1,7 @@
 import { QueueItem } from "@/types";
 import { Card, CardFooter, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { CheckCircle2, PlayIcon } from "lucide-react";
+import { CheckCircle2, PlayIcon, XIcon } from "lucide-react";
 
 import localFont from "next/font/local";
 
@@ -9,6 +9,8 @@ import { Button } from "./ui/button";
 import { getBookGradient } from "@/helper/getBookGradient";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  deleteQueue,
+  deleteQueueOptimistically,
   updateQueueStatus,
   updateQueueStatusOptimistically,
 } from "@/store/App/app.slice";
@@ -56,6 +58,21 @@ export const QueueCard = ({
     toast.success(`${title} moved to ${statusToChange}`);
   };
 
+  const handleQueueDelete = () => {
+    dispatch(
+      deleteQueue({
+        id,
+      }),
+    );
+    dispatch(
+      deleteQueueOptimistically({
+        id,
+      }),
+    );
+
+    toast.success(`${title} deleted from queue!`);
+  };
+
   return (
     <Card
       style={{
@@ -68,10 +85,18 @@ export const QueueCard = ({
                  before:absolute before:inset-0
                  before:bg-linear-to-t before:from-black before:to-transparent overflow-hidden shrink-0"
     >
-      <CardHeader className="relative z-10 px-3 md:px-4">
+      <CardHeader className="relative z-10 px-3 md:px-4 flex items-center justify-between">
         <Badge className="rounded-sm uppercase font-mono tracking-wide bg-neutral-700/40 text-white">
           {status}
         </Badge>
+
+        <div
+          className="rounded-full bg-neutral-700/40 text-white cursor-pointer"
+          onClick={handleQueueDelete}
+          onKeyDown={(e) => e.key === "Enter" && handleQueueDelete}
+        >
+          <XIcon size={14} className="m-1" />
+        </div>
       </CardHeader>
 
       <CardFooter className="relative z-10 mt-auto flex flex-col items-start gap-1 px-3 md:px-4">

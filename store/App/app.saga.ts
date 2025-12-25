@@ -3,6 +3,8 @@ import { PayloadAction } from "@reduxjs/toolkit";
 import { ActionState } from "../../helper/constants";
 import {
   addContentToQueue,
+  deleteQueue,
+  DeleteQueueRequest,
   getQueues,
   searchContent,
   updateQueueStatus,
@@ -16,6 +18,7 @@ export const Actions = {
   addContentToQueue: "add-content-to-queue/",
   getQueues: "get-queues/",
   updateQueueStatus: "update-queue-status/",
+  deleteQueue: "delete-queue/",
 };
 
 function* searchContentSaga() {
@@ -130,9 +133,39 @@ function* updateQueueStatusSaga() {
   );
 }
 
+function* deleteQueueSaga() {
+  yield takeLatest(
+    Actions.deleteQueue,
+    function* (action: PayloadAction<DeleteQueueRequest>): SagaIterator {
+      try {
+        yield put({
+          type: Actions.deleteQueue + ActionState.PENDING,
+          payload: {},
+        });
+
+        const payload = action.payload;
+        const data = yield call(async () => {
+          return deleteQueue(payload);
+        });
+
+        yield put({
+          type: Actions.deleteQueue + ActionState.FULFILLED,
+          payload: data,
+        });
+      } catch (err) {
+        yield put({
+          type: Actions.deleteQueue + ActionState.REJECTED,
+          payload: err,
+        });
+      }
+    },
+  );
+}
+
 export const appSaga = [
   ...searchContentSaga(),
   ...addContentToQueueSaga(),
   ...getQueuesSaga(),
   ...updateQueueStatusSaga(),
+  ...deleteQueueSaga(),
 ];
