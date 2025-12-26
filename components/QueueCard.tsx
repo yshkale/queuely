@@ -76,10 +76,7 @@ export const QueueCard = ({
   return (
     <Card
       style={{
-        backgroundImage:
-          type === "book"
-            ? `linear-gradient(to top, ${getBookGradient()}, ${getBookGradient(true)})`
-            : `url(${imageUrl})`,
+        backgroundImage: `url(${imageUrl})`,
       }}
       className="relative bg-no-repeat bg-cover bg-center w-[49%] h-68 md:w-3xs md:min-h-96
                  before:absolute before:inset-0
