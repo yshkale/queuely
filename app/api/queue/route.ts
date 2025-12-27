@@ -1,15 +1,17 @@
 import { supabase } from "@/lib/supabase";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const rateLimit = new Ratelimit({
   redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(15, "1 m"),
 });
 
-export async function POST(request: any) {
-  const ip = request.ip ?? "127.0.0.1";
+export async function POST(request: NextRequest) {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+
   const { success } = await rateLimit.limit(ip);
 
   if (!success) {
