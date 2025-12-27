@@ -71,6 +71,18 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+
+  const { success } = await rateLimit.limit(ip);
+
+  if (!success) {
+    return NextResponse.json({
+      error: "Rate limit exceeded",
+      status: 429,
+    });
+  }
+
   try {
     const { data, error } = await supabase.from("queue").select();
 
