@@ -1,7 +1,24 @@
 import { supabase } from "@/lib/supabase";
-import { NextRequest, NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { NextResponse } from "next/server";
 
-export async function DELETE(req: NextRequest) {
+const rateLimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(15, "1 m"),
+});
+
+export async function DELETE(req: any) {
+  const ip = req.ip ?? "127.0.0.1";
+  const { success } = await rateLimit.limit(ip);
+
+  if (!success) {
+    return NextResponse.json({
+      error: "Rate limit exceeded",
+      status: 429,
+    });
+  }
+
   try {
     const { id } = await req.json();
 

@@ -6,7 +6,9 @@ import {
   searchMovies,
   searchTVShows,
 } from "@/lib/api-clients/tmdb";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 export interface SearchResult {
   id: string;
@@ -20,8 +22,22 @@ export interface SearchResult {
   director?: string;
   popularity?: number;
 }
+const rateLimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(15, "1 m"),
+});
 
-export async function GET(request: NextRequest) {
+export async function GET(request: any) {
+  const ip = request.ip ?? "127.0.0.1";
+  const { success } = await rateLimit.limit(ip);
+
+  if (!success) {
+    return NextResponse.json({
+      error: "Rate limit exceeded",
+      status: 429,
+    });
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("query");
