@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm install @supabase/ssr)",
+      "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm uninstall @upstash/ratelimit @upstash/redis)"
+    ]
+  }
+}

@@ -1,35 +1,24 @@
-import { supabase } from "@/lib/supabase";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
+import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 import { NextRequest, NextResponse } from "next/server";
 
-const rateLimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(15, "1 m"),
-});
-
 export async function POST(request: NextRequest) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-
-  const { success } = await rateLimit.limit(ip);
-
-  if (!success) {
-    return NextResponse.json({
-      error: "Rate limit exceeded",
-      status: 429,
-    });
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const body = await request.json();
 
-    //validate
     if (!body.contentId || !body.type || !body.title) {
       throw new Error("Invalid request");
     }
 
-    //save to db
     const { data, error } = await supabase
       .from("queue")
       .insert({
@@ -42,12 +31,12 @@ export async function POST(request: NextRequest) {
         imageUrl: body.imageUrl,
         status: body.status,
         director: body.director,
+        user_id: user.id,
       })
       .select()
       .single();
 
     if (error) {
-      // Duplicate entry
       if (error.code === "23505") {
         return NextResponse.json(
           { error: "Already in queue" },
@@ -57,48 +46,45 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json({
-      data,
-      status: 201,
-    });
+    return NextResponse.json({ data }, { status: 201 });
   } catch (err) {
     console.error("API Error:", err);
-    return NextResponse.json({
-      status: 500,
-      body: JSON.stringify({ error: "Failed to add to queue" }),
-    });
+    return NextResponse.json(
+      { error: "Failed to add to queue" },
+      { status: 500 },
+    );
   }
 }
 
 export async function GET(request: NextRequest) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-
-  const { success } = await rateLimit.limit(ip);
-
-  if (!success) {
-    return NextResponse.json({
-      error: "Rate limit exceeded",
-      status: 429,
-    });
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
-    const { data, error } = await supabase.from("queue").select();
+    const { data, error } = await supabase
+      .from("queue")
+      .select()
+      .eq("user_id", user.id);
 
     if (error) {
+      console.error("DB error:", JSON.stringify(error));
       throw error;
     }
 
     return NextResponse.json({
       queues: data.sort((a, b) => b.id - a.id),
-      status: 200,
     });
   } catch (err) {
     console.error("API Error:", err);
-    return NextResponse.json({
-      status: 500,
-      body: JSON.stringify({ error: "Failed to fetch queue" }),
-    });
+    return NextResponse.json(
+      { error: "Failed to fetch queue" },
+      { status: 500 },
+    );
   }
 }

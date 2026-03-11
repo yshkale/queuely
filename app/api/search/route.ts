@@ -6,9 +6,9 @@ import {
   searchMovies,
   searchTVShows,
 } from "@/lib/api-clients/tmdb";
+import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit } from "@/lib/ratelimit";
 import { NextRequest, NextResponse } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
 
 export interface SearchResult {
   id: string;
@@ -22,33 +22,26 @@ export interface SearchResult {
   director?: string;
   popularity?: number;
 }
-const rateLimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(15, "1 m"),
-});
 
 export async function GET(request: NextRequest) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-
-  const { success } = await rateLimit.limit(ip);
-
-  if (!success) {
-    return NextResponse.json({
-      error: "Rate limit exceeded",
-      status: 429,
-    });
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("query");
 
     if (!query) {
-      return NextResponse.json({
-        error: "Query parameter is required",
-        status: 400,
-      });
+      return NextResponse.json(
+        { error: "Query parameter is required" },
+        { status: 400 },
+      );
     }
 
     const results: SearchResult[] = [];
@@ -122,9 +115,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     console.error("search API error:", err);
-    return NextResponse.json({
-      error: "Failed to search content",
-      status: 500,
-    });
+    return NextResponse.json(
+      { error: "Failed to search content" },
+      { status: 500 },
+    );
   }
 }
