@@ -10,7 +10,7 @@ import localFont from "next/font/local";
 const PlayfairRegular = localFont({ src: "../fonts/playfair-regular.ttf" });
 const PlayfairItalic = localFont({ src: "../fonts/playfair-italic.ttf" });
 
-const ease = [0.16, 1, 0.3, 1];
+const ease = [0.16, 1, 0.3, 1] as const;
 
 export default function Landing() {
   const router = useRouter();

@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm install @supabase/ssr)",
-      "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm uninstall @upstash/ratelimit @upstash/redis)"
+      "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm uninstall @upstash/ratelimit @upstash/redis)",
+      "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm run build 2>&1 | tail -50)",
+      "Bash(cd \"C:\\\\Users\\\\yashn\\\\OneDrive\\\\Documents\\\\Code\\\\Projects\\\\queuely\" && npm run build 2>&1 | tail -30)"
     ]
   }
 }
