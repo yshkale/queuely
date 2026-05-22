@@ -21,7 +21,6 @@ import {
 import { AsyncState } from "@/helper/constants";
 import { SearchContentCard } from "./SearchContentCard";
 import { SearchResult } from "@/app/api/search/route";
-import { toast } from "sonner";
 
 export const AddContentDialog = () => {
   const dispatch = useDispatch();
@@ -67,7 +66,6 @@ export const AddContentDialog = () => {
     dispatch(addContentToQueue(queueItem));
     dispatch(addQueueItemOptimistically(queueItem));
 
-    toast.success(`${content.title} added to your queue`);
     handleClose();
   };
 
@@ -140,6 +138,15 @@ export const AddContentDialog = () => {
                 </p>
               </div>
             )}
+
+          {searchContentApiStatus === AsyncState.REJECTED && (
+            <div className="w-full flex flex-col gap-4 uppercase items-center justify-center py-8">
+              <Command size={54} className="text-neutral-300" />
+              <p className="text-sm text-neutral-400 font-mono">
+                Search failed. Try again.
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

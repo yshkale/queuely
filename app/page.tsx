@@ -6,6 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { QueueCard } from "@/components/QueueCard";
 import { StatusTabs } from "@/components/StatusTabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { AsyncState } from "@/helper/constants";
 import { getAllQueues } from "@/store/App/app.slice";
 import { QueueItem } from "@/types";
@@ -54,6 +55,17 @@ export default function Home() {
 
         {getQueuesApiStatus === AsyncState.PENDING ? (
           <Skeleton className="h-96 w-full my-8 md:my-14" />
+        ) : null}
+
+        {getQueuesApiStatus === AsyncState.REJECTED ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <p className="text-neutral-500 text-sm">
+              Failed to load your queue.
+            </p>
+            <Button variant="outline" onClick={() => dispatch(getAllQueues())}>
+              Retry
+            </Button>
+          </div>
         ) : null}
 
         {getQueuesApiStatus === AsyncState.FULFILLED &&

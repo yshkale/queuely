@@ -14,7 +14,6 @@ import {
   updateQueueStatus,
   updateQueueStatusOptimistically,
 } from "@/store/App/app.slice";
-import { toast } from "sonner";
 
 const logoFont = localFont({
   src: "../app/fonts/Queuely-serif.ttf",
@@ -22,6 +21,7 @@ const logoFont = localFont({
 
 export const QueueCard = ({
   id,
+  contentId,
   title,
   imageUrl,
   status,
@@ -46,6 +46,7 @@ export const QueueCard = ({
       updateQueueStatus({
         id,
         status: statusToChange,
+        originalStatus: status,
       }),
     );
     dispatch(
@@ -54,23 +55,22 @@ export const QueueCard = ({
         status: statusToChange,
       }),
     );
-
-    toast.success(`${title} moved to ${statusToChange}`);
   };
 
   const handleQueueDelete = () => {
-    dispatch(
-      deleteQueue({
-        id,
-      }),
-    );
-    dispatch(
-      deleteQueueOptimistically({
-        id,
-      }),
-    );
-
-    toast.success(`${title} deleted from queue!`);
+    const originalItem: QueueItem = {
+      id,
+      contentId,
+      title,
+      imageUrl,
+      status,
+      type,
+      year,
+      author,
+      director,
+    };
+    dispatch(deleteQueue({ id, originalItem }));
+    dispatch(deleteQueueOptimistically({ id }));
   };
 
   return (

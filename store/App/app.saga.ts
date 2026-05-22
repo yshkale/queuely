@@ -12,6 +12,12 @@ import {
 } from "@/services";
 import { SagaIterator } from "redux-saga";
 import { QueueItem } from "@/types";
+import { toast } from "sonner";
+import {
+  addQueueItemBack,
+  removeQueueItemOptimistically,
+  updateQueueStatusOptimistically,
+} from "./app.slice";
 
 export const Actions = {
   searchContent: "search-content/",
@@ -45,6 +51,7 @@ function* searchContentSaga() {
           type: Actions.searchContent + ActionState.REJECTED,
           payload: err,
         });
+        toast.error("Search failed. Please try again.");
       }
     },
   );
@@ -69,11 +76,16 @@ function* addContentToQueueSaga() {
           type: Actions.addContentToQueue + ActionState.FULFILLED,
           payload: data,
         });
+        toast.success("Added to your queue!");
       } catch (err) {
         yield put({
           type: Actions.addContentToQueue + ActionState.REJECTED,
           payload: err,
         });
+        yield put(
+          removeQueueItemOptimistically({ contentId: action.payload.contentId }),
+        );
+        toast.error("Failed to add item. Please try again.");
       }
     },
   );
@@ -123,11 +135,21 @@ function* updateQueueStatusSaga() {
           type: Actions.updateQueueStatus + ActionState.FULFILLED,
           payload: data,
         });
+        toast.success("Status updated!");
       } catch (err) {
         yield put({
           type: Actions.updateQueueStatus + ActionState.REJECTED,
           payload: err,
         });
+        if (action.payload.originalStatus !== undefined) {
+          yield put(
+            updateQueueStatusOptimistically({
+              id: action.payload.id,
+              status: action.payload.originalStatus,
+            }),
+          );
+        }
+        toast.error("Failed to update status. Changes reverted.");
       }
     },
   );
@@ -152,11 +174,16 @@ function* deleteQueueSaga() {
           type: Actions.deleteQueue + ActionState.FULFILLED,
           payload: data,
         });
+        toast.success("Removed from queue!");
       } catch (err) {
         yield put({
           type: Actions.deleteQueue + ActionState.REJECTED,
           payload: err,
         });
+        if (action.payload.originalItem) {
+          yield put(addQueueItemBack(action.payload.originalItem));
+        }
+        toast.error("Failed to remove item. Changes reverted.");
       }
     },
   );

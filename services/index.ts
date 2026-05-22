@@ -3,10 +3,12 @@ import { QueueItem } from "@/types";
 export interface UpdateQueueStatusRequest {
   id: any;
   status: string;
+  originalStatus?: string;
 }
 
 export interface DeleteQueueRequest {
   id: any;
+  originalItem?: QueueItem;
 }
 
 export const searchContent = async (query: string) => {
@@ -27,6 +29,7 @@ export const searchContent = async (query: string) => {
     return responseJson;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
@@ -49,6 +52,7 @@ export const addContentToQueue = async (queueItem: QueueItem) => {
     return responseJson;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
@@ -70,6 +74,7 @@ export const getQueues = async () => {
     return responseJson.queues;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
@@ -98,6 +103,7 @@ export const updateQueueStatus = async ({
     return responseJson.data;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };
 
@@ -122,5 +128,6 @@ export const deleteQueue = async ({ id }: DeleteQueueRequest) => {
     return responseJson;
   } catch (err) {
     console.error(err);
+    throw err;
   }
 };

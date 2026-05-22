@@ -84,6 +84,17 @@ const slice = createSlice({
         (queue) => queue.id !== action.payload.id,
       );
     },
+    removeQueueItemOptimistically: (
+      state,
+      action: PayloadAction<{ contentId: string }>,
+    ) => {
+      state.queues = state.queues.filter(
+        (queue) => queue.contentId !== action.payload.contentId,
+      );
+    },
+    addQueueItemBack: (state, action: PayloadAction<QueueItem>) => {
+      state.queues.unshift(action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(Actions.searchContent + ActionState.PENDING, (state) => {
@@ -178,6 +189,8 @@ export const {
   addQueueItemOptimistically,
   updateQueueStatusOptimistically,
   deleteQueueOptimistically,
+  removeQueueItemOptimistically,
+  addQueueItemBack,
 } = slice.actions;
 
 export const searchContent = createAction<string>(Actions.searchContent);
