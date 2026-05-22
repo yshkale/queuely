@@ -1,7 +1,7 @@
 import { SearchResult } from "@/app/api/search/route";
 import { ActionState, AsyncState } from "@/helper/constants";
 import { createSlice } from "@reduxjs/toolkit";
-import { Actions } from "./app.saga";
+import { Actions } from "./actions";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { createAction } from "@reduxjs/toolkit";
 import { QueueItem } from "@/types";
