@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-  if (!checkRateLimit(ip)) {
+  if (!await checkRateLimit(ip)) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-  if (!checkRateLimit(ip)) {
+  if (!await checkRateLimit(ip)) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
@@ -70,16 +70,15 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("queue")
       .select()
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("DB error:", JSON.stringify(error));
       throw error;
     }
 
-    return NextResponse.json({
-      queues: data.sort((a, b) => b.id - a.id),
-    });
+    return NextResponse.json({ queues: data });
   } catch (err) {
     console.error("API Error:", err);
     return NextResponse.json(

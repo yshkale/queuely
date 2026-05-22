@@ -1,8 +1,6 @@
 import { searchBooks } from "@/lib/api-clients/books";
 import {
   getImageUrl,
-  getMovieCredits,
-  getTVCredits,
   searchMovies,
   searchTVShows,
 } from "@/lib/api-clients/tmdb";
@@ -23,9 +21,11 @@ export interface SearchResult {
   popularity?: number;
 }
 
+const RESULTS_PER_TYPE = 5;
+
 export async function GET(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-  if (!checkRateLimit(ip)) {
+  if (!await checkRateLimit(ip)) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
@@ -34,84 +34,71 @@ export async function GET(request: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get("query");
+    const query = request.nextUrl.searchParams.get("query");
 
-    if (!query) {
+    if (!query || query.trim().length < 1) {
       return NextResponse.json(
         { error: "Query parameter is required" },
         { status: 400 },
       );
     }
 
-    const results: SearchResult[] = [];
+    const [movies, tvShows, books] = await Promise.all([
+      searchMovies(query).catch(() => []),
+      searchTVShows(query).catch(() => []),
+      searchBooks(query).catch(() => []),
+    ]);
 
-    try {
-      const movies = await searchMovies(query);
-      const moviesWithDirectors = await Promise.all(
-        movies.slice(0, 10).map(async (movie) => ({
-          id: `movie-${movie.id}`,
-          type: "movie" as const,
-          title: movie.title,
-          description: movie.overview,
-          imageUrl: getImageUrl(movie.poster_path),
-          releaseDate: movie.release_date,
-          rating: movie.vote_average,
-          popularity: movie.popularity || 0,
-          director: await getMovieCredits(movie.id).catch(() => undefined),
-        })),
-      );
-      results.push(...moviesWithDirectors);
-    } catch (e) {
-      console.error("Movie search failed:", e);
-    }
+    const movieResults: SearchResult[] = movies
+      .slice(0, RESULTS_PER_TYPE)
+      .map((movie) => ({
+        id: `movie-${movie.id}`,
+        type: "movie" as const,
+        title: movie.title,
+        description: movie.overview,
+        imageUrl: getImageUrl(movie.poster_path, "w500"),
+        releaseDate: movie.release_date || null,
+        rating: movie.vote_average,
+        popularity: movie.popularity || 0,
+      }));
 
-    try {
-      const tvShows = await searchTVShows(query);
-      const tvWithDirectors = await Promise.all(
-        tvShows.slice(0, 10).map(async (show) => ({
-          id: `tv-${show.id}`,
-          type: "tv" as const,
-          title: show.name,
-          description: show.overview,
-          imageUrl: getImageUrl(show.poster_path),
-          releaseDate: show.first_air_date,
-          rating: show.vote_average,
-          popularity: show.popularity || 0,
-          director: await getTVCredits(show.id).catch(() => undefined),
-        })),
-      );
-      results.push(...tvWithDirectors);
-    } catch (e) {
-      console.error("TV search failed:", e);
-    }
+    const tvResults: SearchResult[] = tvShows
+      .slice(0, RESULTS_PER_TYPE)
+      .map((show) => ({
+        id: `tv-${show.id}`,
+        type: "tv" as const,
+        title: show.name,
+        description: show.overview,
+        imageUrl: getImageUrl(show.poster_path, "w500"),
+        releaseDate: show.first_air_date || null,
+        rating: show.vote_average,
+        popularity: show.popularity || 0,
+      }));
 
-    try {
-      const books = await searchBooks(query);
-      results.push(
-        ...books.map((book) => ({
-          id: `book-${book.id}`,
-          type: "book" as const,
-          title: book.volumeInfo.title,
-          description: book.volumeInfo.description || "",
-          imageUrl: `https://books.google.com/books/publisher/content/images/frontcover/${book.id}?fife=w800-h1200&source=gbs_api`,
-          releaseDate: book.volumeInfo.publishedDate || null,
-          authors: book.volumeInfo.authors,
-          popularity: 0,
-        })),
-      );
-    } catch (e) {
-      console.error("Book search failed:", e);
-    }
+    const bookResults: SearchResult[] = books
+      .slice(0, RESULTS_PER_TYPE)
+      .map((book) => ({
+        id: `book-${book.id}`,
+        type: "book" as const,
+        title: book.volumeInfo.title,
+        description: book.volumeInfo.description || "",
+        imageUrl:
+          (
+            book.volumeInfo.imageLinks?.large ??
+            book.volumeInfo.imageLinks?.thumbnail ??
+            null
+          )?.replace("http://", "https://") ?? null,
+        releaseDate: book.volumeInfo.publishedDate || null,
+        authors: book.volumeInfo.authors,
+        popularity: 0,
+      }));
 
-    const sortedResults = results
-      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
-      ?.slice(0, 10);
+    const results = [...movieResults, ...tvResults, ...bookResults];
 
     return NextResponse.json({
       query,
-      count: sortedResults.length,
-      results: sortedResults,
+      count: results.length,
+      results,
     });
   } catch (err) {
     console.error("search API error:", err);

@@ -57,28 +57,8 @@ export async function searchTVShows(query: string): Promise<TMDBTVShow[]> {
 
 export function getImageUrl(
   path: string | null,
-  size: "w200" | "w500" | "original" = "original",
+  size: "w200" | "w500" | "original" = "w500",
 ): string | null {
   if (!path) return null;
   return `https://image.tmdb.org/t/p/${size}${path}`;
-}
-
-export async function getMovieCredits(movieId: number) {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${TMDB_API_KEY}`,
-  );
-  const data = await response.json();
-  return (
-    data.crew.find((person: any) => person.job === "Director")?.name || null
-  );
-}
-
-export async function getTVCredits(tvId: number) {
-  const response = await fetch(
-    `https://api.themoviedb.org/3/tv/${tvId}/credits?api_key=${TMDB_API_KEY}`,
-  );
-  const data = await response.json();
-  return (
-    data.crew.find((person: any) => person.job === "Director")?.name || null
-  );
 }

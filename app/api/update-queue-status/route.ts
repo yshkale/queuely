@@ -2,9 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit } from "@/lib/ratelimit";
 import { NextRequest, NextResponse } from "next/server";
 
+const VALID_STATUSES = ["backlog", "active", "history"] as const;
+
 export async function PATCH(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-  if (!checkRateLimit(ip)) {
+  if (!await checkRateLimit(ip)) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
@@ -21,13 +23,21 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
+  if (!VALID_STATUSES.includes(status)) {
+    return NextResponse.json(
+      { error: `Status must be one of: ${VALID_STATUSES.join(", ")}` },
+      { status: 400 },
+    );
+  }
+
   try {
     const { data, error } = await supabase
       .from("queue")
       .update({ status })
       .eq("id", id)
       .eq("user_id", user.id)
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error(error);

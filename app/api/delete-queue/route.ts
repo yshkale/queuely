@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function DELETE(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "127.0.0.1";
-  if (!checkRateLimit(ip)) {
+  if (!await checkRateLimit(ip)) {
     return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
   }
 
@@ -28,7 +28,7 @@ export async function DELETE(req: NextRequest) {
     if (error) {
       return NextResponse.json(
         { success: false, error: error.message },
-        { status: 400 },
+        { status: 500 },
       );
     }
 
