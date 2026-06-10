@@ -13,7 +13,7 @@ export interface DeleteQueueRequest {
 
 export const searchContent = async (query: string) => {
   try {
-    const response = await fetch(`/api/search?query=${query}`, {
+    const response = await fetch(`/api/search?query=${encodeURIComponent(query)}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

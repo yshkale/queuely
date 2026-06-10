@@ -7,10 +7,16 @@ import { createAction } from "@reduxjs/toolkit";
 import { QueueItem } from "@/types";
 import { DeleteQueueRequest, UpdateQueueStatusRequest } from "@/services";
 
+export interface SearchResponse {
+  query: string;
+  count: number;
+  results: SearchResult[];
+}
+
 export interface AppState {
   activeTab: "backlog" | "history" | "active";
   activeCategory: "all" | "movies" | "tv-shows" | "books";
-  searchedContent: SearchResult[];
+  searchedContent: SearchResponse | null;
   searchContentApiStatus: string;
   addContentToQueueResponse: any;
   addContentToQueueApiStatus: string;
@@ -25,7 +31,7 @@ export interface AppState {
 const initialState: AppState = {
   activeTab: "backlog",
   activeCategory: "all",
-  searchedContent: [],
+  searchedContent: null,
   searchContentApiStatus: AsyncState.IDLE,
 
   addContentToQueueResponse: null,
@@ -53,7 +59,7 @@ const slice = createSlice({
       state.activeCategory = action.payload;
     },
     resetSearchedContent: (state) => {
-      state.searchedContent = [];
+      state.searchedContent = null;
       state.searchContentApiStatus = AsyncState.IDLE;
     },
     toggleQueueCard: (state, action) => {
@@ -102,14 +108,14 @@ const slice = createSlice({
     });
     builder.addCase(
       Actions.searchContent + ActionState.FULFILLED,
-      (state, action: PayloadAction<SearchResult[]>) => {
+      (state, action: PayloadAction<SearchResponse>) => {
         state.searchedContent = action.payload;
         state.searchContentApiStatus = AsyncState.FULFILLED;
       },
     );
     builder.addCase(Actions.searchContent + ActionState.REJECTED, (state) => {
       state.searchContentApiStatus = AsyncState.REJECTED;
-      state.searchedContent = [];
+      state.searchedContent = null;
     });
 
     builder.addCase(
